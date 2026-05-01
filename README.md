@@ -150,5 +150,9 @@ maternal_fetal_risk_system/
 ## 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/maternal_fetal_risk_system/issues).
 
+## Developing Team
+Faraz Shoukat @farazshoukat
+Musadiq Qaysir @MusadiqQaysir7860
+
 ## 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
