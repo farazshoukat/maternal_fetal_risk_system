@@ -1,0 +1,49 @@
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# ── Jupyter ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+dist/
+.cache/
+.parcel-cache/
+
+# ── Vite ─────────────────────────────────────────────────────────────────────
+frontend/dist/
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ── ML artifacts (large — excluded from git; generate locally) ────────────────
+# Uncomment the line below to exclude the trained .pkl model files (2 MB+)
+# backend/ml/outputs/*.pkl
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
