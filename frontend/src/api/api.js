@@ -1,6 +1,6 @@
 /**
  * api.js — Unified API client
- *
+ *       
  * Priority order:
  *   1. FastAPI backend (http://localhost:8000) — real ML model
  *   2. Graceful mock fallback — when backend is offline (dev / offline use)
