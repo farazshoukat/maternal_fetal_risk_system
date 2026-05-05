@@ -1,9 +1,10 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Users, LayoutDashboard, Settings, Bell, Search, Stethoscope } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Users, LayoutDashboard, Settings, Bell, Search, Stethoscope, ArrowLeft } from 'lucide-react';
 
 const ClinicalLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => location.pathname.startsWith(path);
 
@@ -45,14 +46,24 @@ const ClinicalLayout = () => {
           </Link>
         </nav>
 
-        <div style={{ padding: '1.5rem 1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <Link to="/" style={{ 
-            display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem',
-            color: 'var(--color-text-muted)'
-          }}>
-            <Settings size={20} />
-            Settings
-          </Link>
+        <div style={{ padding: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+              padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)',
+              width: '100%', background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'var(--color-text-secondary)', cursor: 'pointer',
+              fontSize: '0.9rem', fontWeight: 500,
+              transition: 'background 0.2s, color 0.2s'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.12)'; e.currentTarget.style.color = 'var(--color-accent)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
+          >
+            <ArrowLeft size={18} />
+            Back to Home
+          </button>
         </div>
       </aside>
 

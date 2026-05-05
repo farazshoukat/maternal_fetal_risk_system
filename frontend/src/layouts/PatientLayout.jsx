@@ -1,9 +1,10 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Activity, History, User } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Activity, History, User, ArrowLeft } from 'lucide-react';
 
 const PatientLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => location.pathname === path;
 
@@ -12,9 +13,26 @@ const PatientLayout = () => {
       {/* Mobile Top Header */}
       <header className="glass-panel" style={{ borderRadius: 0, borderBottom: '1px solid var(--color-border)', padding: '1rem', position: 'sticky', top: 0, zIndex: 10 }}>
         <div className="container flex-center" style={{ justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Activity color="var(--color-accent)" />
-            <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Patient Portal</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.375rem',
+                background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '0.5rem', padding: '0.35rem 0.75rem', cursor: 'pointer',
+                color: 'var(--color-text-secondary)', fontSize: '0.8rem', fontWeight: 500,
+                transition: 'background 0.2s, color 0.2s'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.15)'; e.currentTarget.style.color = 'var(--color-accent)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
+            >
+              <ArrowLeft size={14} />
+              Home
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Activity color="var(--color-accent)" />
+              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Patient Portal</h2>
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.25rem 0.75rem', borderRadius: '1rem' }}>
             <User size={16} />
