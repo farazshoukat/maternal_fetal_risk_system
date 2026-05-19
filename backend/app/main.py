@@ -14,6 +14,7 @@
 ================================================================================
 """
 
+import threading
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,6 +25,7 @@ from app.schemas import (
     HealthResponse,
 )
 from app.predictor import MaternalRiskPredictor, predict_fetal_risk_heuristic
+from app.alerting import fire_n8n_alert
 
 # ── Mock patient store (mirrors frontend mockData.js) ────────────────────────
 MOCK_PATIENTS = [
@@ -121,13 +123,15 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS — allow the Vite dev server (port 5173) and any localhost origin
+# CORS — allow Vite dev server on any common port
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://localhost:5174",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
         "http://127.0.0.1:3000",
     ],
     allow_credentials=True,
@@ -169,6 +173,28 @@ async def predict_maternal_risk(body: MaternalVitalsRequest):
             body_temp=body.bodyTemp,
             heart_rate=body.heartRate,
         )
+
+        # ── Fire n8n webhook alert (non-blocking background thread) ──────────
+        vitals_payload = {
+            "systolicBP":  body.systolicBP,
+            "diastolicBP": body.diastolicBP,
+            "bloodSugar":  body.bloodSugar,
+            "bodyTemp":    body.bodyTemp,
+            "heartRate":   body.heartRate,
+            "age":         body.age,
+        }
+        threading.Thread(
+            target=fire_n8n_alert,
+            kwargs={
+                "risk_level":   result["risk_level"],
+                "confidence":   result["probabilities"].get(result["risk_level"], result["confidence"]),
+                "vitals":       vitals_payload,
+                "patient_name": getattr(body, "patient_name", "Anonymous Patient"),
+            },
+            daemon=True,
+        ).start()
+        # ─────────────────────────────────────────────────────────────────────
+
         return result
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))

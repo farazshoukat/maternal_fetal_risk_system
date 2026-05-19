@@ -17,6 +17,9 @@ Dependencies: scikit-learn, xgboost, pandas, numpy, matplotlib, seaborn
 ================================================================================
 """
 
+import sys
+sys.stdout.reconfigure(encoding="utf-8")
+
 import warnings
 warnings.filterwarnings("ignore")
 
