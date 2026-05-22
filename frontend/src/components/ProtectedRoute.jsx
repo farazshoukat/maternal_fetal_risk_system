@@ -7,18 +7,19 @@ import { useAuth } from '../context/AuthContext';
  * @param {string} requiredRole - 'patient' | 'doctor' | undefined (any authenticated user)
  */
 function ProtectedRoute({ children, requiredRole }) {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
   const location = useLocation();
 
-  // Hard cap: if still loading after 4s, treat as unauthenticated
+  // Hard cap: if still loading after 6s, treat as unauthenticated
   const [timedOut, setTimedOut] = useState(false);
   useEffect(() => {
-    if (!loading) return;
-    const t = setTimeout(() => setTimedOut(true), 4000);
+    if (!loading && !profileLoading) return;
+    const t = setTimeout(() => setTimedOut(true), 6000);
     return () => clearTimeout(t);
-  }, [loading]);
+  }, [loading, profileLoading]);
 
-  if (loading && !timedOut) {
+  // Wait for both auth session AND profile to finish loading
+  if ((loading || profileLoading) && !timedOut) {
     return (
       <div className="auth-loading">
         <div className="auth-loading-spinner" />
@@ -31,10 +32,9 @@ function ProtectedRoute({ children, requiredRole }) {
   }
 
   if (requiredRole) {
-    // If profile hasn't loaded yet (e.g. table missing), don't redirect in a loop
+    // Profile is null means it truly could not be fetched even with metadata fallback
     if (profile === null) {
-      // Profile failed to fetch — send to login so user can re-authenticate
-      // once the profiles table is set up
+      console.warn('[ProtectedRoute] No profile found — redirecting to login');
       return <Navigate to="/login" state={{ from: location, profileError: true }} replace />;
     }
     if (profile.role !== requiredRole) {
@@ -42,7 +42,6 @@ function ProtectedRoute({ children, requiredRole }) {
       return <Navigate to={redirectTo} replace />;
     }
   }
-
 
   return children;
 }

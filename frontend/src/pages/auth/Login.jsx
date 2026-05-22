@@ -46,7 +46,14 @@ export default function Login() {
       const defaultPath = selectedRole === 'doctor' ? '/clinical' : '/patient';
       navigate(from || defaultPath, { replace: true });
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const msg = err.message || '';
+      if (msg.toLowerCase().includes('email not confirmed')) {
+        setError('Please confirm your email address first — check your inbox for a verification link.');
+      } else if (msg.toLowerCase().includes('invalid login credentials') || msg.toLowerCase().includes('invalid credentials')) {
+        setError('Incorrect email or password. Please try again.');
+      } else {
+        setError(msg || 'Login failed. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }
