@@ -1,6 +1,6 @@
 # Maternal-Fetal Risk System 🩺🤰
 
-![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue)
+![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue).
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)
 ![Machine Learning](https://img.shields.io/badge/ML-Random%20Forest%20%2B%20XGBoost-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
