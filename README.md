@@ -1,4 +1,4 @@
-# Maternal-Fetal Risk System 🩺🤰
+# Maternal-Fetal Risk System
 
 ![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue).
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)
