@@ -5,7 +5,7 @@
 ![Machine Learning](https://img.shields.io/badge/ML-Random%20Forest%20%2B%20XGBoost-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-A comprehensive, two-tier AI-driven predictive architecture designed to assess maternal health risks and fetal distress using clinical vital signs and Cardiotocogram (CTG) data.
+A comprehensive, two-tier AI-driven predictive architecture designed to assess maternal health risks and fetal distress using clinical vital signs and Cardiotocogram (CTG) data
 
 > **⚠️ DISCLAIMER:** This project is for **educational and research purposes only**. The machine learning models and heuristics provided are not intended to replace professional medical diagnosis, clinical judgment, or treatment decisions.
 
