@@ -1,17 +1,39 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Users, LayoutDashboard, Bell, Search, Stethoscope, ArrowLeft, Zap, BarChart2, Settings } from 'lucide-react';
+import { Users, LayoutDashboard, Bell, Search, Stethoscope, LogOut, Zap, BarChart2 } from 'lucide-react';
 import { useAlerts } from '../context/AlertContext';
+import { useAuth } from '../context/AuthContext';
 
 const ClinicalLayout = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location  = useLocation();
+  const navigate  = useNavigate();
   const { alertLog } = useAlerts();
+  const { profile, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
   const isActive = (path) => location.pathname.startsWith(path);
 
   const unreadAlerts = alertLog.filter(a => a.riskLevel.includes('High')).length;
+
+  const displayName = profile?.full_name || 'Clinician';
+  // Build initials from full name (max 2 chars)
+  const initials = displayName
+    .split(' ')
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'DR';
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (err) {
+      console.error('[ClinicalLayout] signOut error:', err);
+    } finally {
+      // Always navigate to login with replace so back button doesn't restore dashboard
+      navigate('/login', { replace: true });
+    }
+  };
 
   const NavLink = ({ to, icon: Icon, label, badge }) => {
     const active = isActive(to);
@@ -82,8 +104,8 @@ const ClinicalLayout = () => {
             Clinical
           </div>
           <NavLink to="/clinical/dashboard" icon={LayoutDashboard} label="Overview" />
-          <NavLink to="/clinical/patients" icon={Users} label="Patients" />
-          <NavLink to="/clinical/analytics" icon={BarChart2} label="Analytics" />
+          <NavLink to="/clinical/patients"  icon={Users}           label="Patients" />
+          <NavLink to="/clinical/analytics" icon={BarChart2}       label="Analytics" />
 
           <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 0.5rem', margin: '1rem 0 0.5rem' }}>
             Automation
@@ -91,29 +113,36 @@ const ClinicalLayout = () => {
           <NavLink to="/clinical/alerts" icon={Zap} label="Alert Workflows" badge={unreadAlerts} />
         </nav>
 
-        {/* Bottom */}
-        <div style={{ padding: '1rem 0.875rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          {/* Doctor profile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', marginBottom: '0.5rem' }}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.75rem' }}>Dr</div>
-            <div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Dr. Sarah Smith</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>Obstetrician</div>
+        {/* Bottom — profile + logout */}
+        <div style={{ padding: '1rem 0.875rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {/* Clinician profile pill */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem', flexShrink: 0 }}>
+              {initials}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {displayName}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>Clinician</div>
             </div>
           </div>
+
+          {/* Logout button — calls signOut() THEN navigates */}
           <button
-            onClick={() => navigate('/')}
+            id="clinical-logout-btn"
+            onClick={handleLogout}
             style={{
               display: 'flex', alignItems: 'center', gap: '0.75rem',
               padding: '0.7rem 1rem', borderRadius: '10px', width: '100%',
-              background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
-              color: 'var(--color-text-secondary)', cursor: 'pointer',
+              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+              color: '#ef4444', cursor: 'pointer',
               fontSize: '0.875rem', fontWeight: 500, transition: 'all 0.15s ease',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.1)'; e.currentTarget.style.color = 'var(--color-accent)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.18)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
           >
-            <ArrowLeft size={17} /> Back to Home
+            <LogOut size={17} /> Logout
           </button>
         </div>
       </aside>
@@ -134,7 +163,6 @@ const ClinicalLayout = () => {
             background: 'rgba(255,255,255,0.05)', borderRadius: '10px',
             padding: '0.5rem 1rem', width: '280px',
             border: '1px solid rgba(255,255,255,0.08)',
-            transition: 'border-color 0.2s',
           }}>
             <Search size={16} color="var(--color-text-muted)" style={{ marginRight: '0.5rem', flexShrink: 0 }} />
             <input
@@ -177,10 +205,12 @@ const ClinicalLayout = () => {
 
             {/* User pill */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderLeft: '1px solid var(--color-border)', paddingLeft: '1.25rem' }}>
-              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem' }}>Dr</div>
+              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem' }}>
+                {initials}
+              </div>
               <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Dr. Smith</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>Obstetrician</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{displayName}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>Clinician</div>
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -22,29 +22,43 @@ const ROLES = [
 ];
 
 export default function Login() {
-  const { signIn } = useAuth();
-  const navigate    = useNavigate();
-  const location    = useLocation();
-  const from        = location.state?.from?.pathname;
+  const { user, profile, loading, profileLoading, signIn } = useAuth();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const from      = location.state?.from?.pathname;
 
   const [selectedRole, setSelectedRole] = useState('patient');
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [error,    setError]    = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [logging,  setLogging]  = useState(false); // in-flight signIn
   const [showPwd,  setShowPwd]  = useState(false);
 
   const role = ROLES.find(r => r.id === selectedRole);
 
+  // ── Redirect once auth state resolves after signIn ─────────────────────────
+  // This effect watches for profile to load after a successful signIn() call.
+  // Using profile.role (real DB value) — NOT selectedRole (UI picker) — prevents
+  // the bug where picking the wrong role in the UI caused a redirect loop.
+  useEffect(() => {
+    if (!logging) return;                 // only redirect if we just signed in
+    if (loading || profileLoading) return; // wait for auth + profile to settle
+    if (!user) return;                    // signIn failed or not yet done
+
+    const role = profile?.role;
+    const defaultPath = role === 'doctor' ? '/clinical' : '/patient';
+    navigate(from || defaultPath, { replace: true });
+  }, [user, profile, loading, profileLoading, logging, navigate, from]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setLogging(false);
     try {
       await signIn({ email, password });
-      // After login, redirect to the page they were trying to visit, or role default
-      const defaultPath = selectedRole === 'doctor' ? '/clinical' : '/patient';
-      navigate(from || defaultPath, { replace: true });
+      // Don't navigate here — let the useEffect above handle it once profile resolves.
+      // Mark that we've just completed a signIn so the effect knows to redirect.
+      setLogging(true);
     } catch (err) {
       const msg = err.message || '';
       if (msg.toLowerCase().includes('email not confirmed')) {
@@ -54,10 +68,16 @@ export default function Login() {
       } else {
         setError(msg || 'Login failed. Please check your credentials.');
       }
-    } finally {
-      setLoading(false);
     }
   }
+
+  // If already signed in (e.g. navigated back to /login), redirect immediately
+  useEffect(() => {
+    if (!loading && !profileLoading && user && profile) {
+      const path = profile.role === 'doctor' ? '/clinical' : '/patient';
+      navigate(from || path, { replace: true });
+    }
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="auth-page">
@@ -78,7 +98,7 @@ export default function Login() {
         <h2 className="auth-heading">Welcome back</h2>
         <p className="auth-subheading">Sign in to your account</p>
 
-        {/* Role Selector */}
+        {/* Role Selector — visual hint only, actual role comes from Supabase */}
         <div className="auth-role-grid">
           {ROLES.map(r => (
             <button
@@ -141,11 +161,11 @@ export default function Login() {
           <button
             type="submit"
             className="auth-submit-btn"
-            disabled={loading}
+            disabled={logging || (loading && user)}
             style={{ '--role-gradient': role.gradient, '--role-glow': role.glow }}
           >
-            {loading ? <span className="auth-btn-spinner" /> : null}
-            {loading ? 'Signing in…' : `Sign in as ${role.label}`}
+            {logging ? <span className="auth-btn-spinner" /> : null}
+            {logging ? 'Signing in…' : `Sign in as ${role.label}`}
           </button>
         </form>
 

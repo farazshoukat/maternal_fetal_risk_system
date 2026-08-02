@@ -1,23 +1,28 @@
 import React, { useState } from 'react';
 import { Activity, Droplet, Thermometer, HeartPulse, Send, User, Zap, CheckCircle } from 'lucide-react';
 import { predictMaternalRisk, submitVitals } from '../../api/api';
+import { insertVitalReading, getOrCreatePatientRecord } from '../../api/supabase_db';
 import RiskBadge from '../../components/RiskBadge';
 import { useAlerts } from '../../context/AlertContext';
+import { useAuth } from '../../context/AuthContext';
 
 const LogVitals = () => {
   const { triggerN8nAlert, addToast } = useAlerts();
+  const { user, profile } = useAuth();
+
+  const displayName = profile?.full_name || 'Patient';
 
   const [formData, setFormData] = useState({
-    systolicBP: '',
+    systolicBP:  '',
     diastolicBP: '',
-    bloodSugar: '',
-    bodyTemp: '',
-    heartRate: '',
-    age: ''
+    bloodSugar:  '',
+    bodyTemp:    '',
+    heartRate:   '',
+    age:         ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult]             = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,23 +43,47 @@ const LogVitals = () => {
         age:         parseInt(formData.age, 10),
       };
 
+      // ── 1. Run ML prediction (FastAPI is source of truth) ─────────────────
       const prediction = await predictMaternalRisk(numericData);
-      await submitVitals(numericData, prediction);
       setResult(prediction);
 
-      // Trigger n8n alerts for high/mid risk
+      // ── 2. Persist to Supabase vital_readings (primary) ───────────────────
+      if (user?.id) {
+        try {
+          // Ensure a patients row exists for this user and get its UUID
+          const patientId = await getOrCreatePatientRecord(
+            user.id,
+            displayName,
+            numericData.age
+          );
+          await insertVitalReading(
+            user.id,
+            patientId,
+            numericData,
+            prediction.riskLevel,
+            'patient'
+          );
+        } catch (dbErr) {
+          console.warn('[LogVitals] Supabase insert failed, falling back to localStorage:', dbErr.message);
+          // Graceful fallback — don't block the user
+        }
+      }
+
+      // ── 3. Fallback: also write to localStorage ───────────────────────────
+      await submitVitals(numericData, prediction);
+
+      // ── 4. Fire n8n alerts ────────────────────────────────────────────────
       if (prediction.riskLevel.includes('High')) {
         triggerN8nAlert(
-          'Jane Doe (You)',
+          displayName,
           'pat-current',
           prediction.riskLevel,
           `BP ${numericData.systolicBP}/${numericData.diastolicBP} mmHg | Sugar ${numericData.bloodSugar} mmol/L — immediate review`,
           'slack'
         );
-        // Also fire SMS
         setTimeout(() => {
           triggerN8nAlert(
-            'Jane Doe (You)',
+            displayName,
             'pat-current',
             prediction.riskLevel,
             `Emergency SMS dispatched to Dr. Smith`,
@@ -63,7 +92,7 @@ const LogVitals = () => {
         }, 1500);
       } else if (prediction.riskLevel.includes('Mid')) {
         triggerN8nAlert(
-          'Jane Doe (You)',
+          displayName,
           'pat-current',
           prediction.riskLevel,
           `Elevated readings logged — follow-up recommended`,
@@ -97,7 +126,8 @@ const LogVitals = () => {
       <div>
         <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Log Today's Vitals</h1>
         <p style={{ color: 'var(--color-text-secondary)' }}>
-          Enter your readings for instant AI assessment. High-risk readings automatically trigger n8n alert workflows.
+          Enter your readings for instant AI assessment. Readings are saved to your health record.
+          High-risk readings automatically trigger n8n alert workflows.
         </p>
       </div>
 
@@ -109,7 +139,7 @@ const LogVitals = () => {
         fontSize: '0.8rem', color: 'rgba(248,250,252,0.7)',
       }}>
         <Zap size={16} color="#ff6416" />
-        <span>Connected to <strong style={{ color: '#ff6416' }}>n8n automation</strong> — high-risk alerts fire Slack + SMS instantly</span>
+        <span>Connected to <strong style={{ color: '#ff6416' }}>n8n automation</strong> — high-risk alerts fire Slack + SMS instantly. Readings sync to Supabase.</span>
       </div>
 
       <form onSubmit={handleSubmit} className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -151,7 +181,7 @@ const LogVitals = () => {
 
         <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ marginTop: '0.5rem' }}>
           {isSubmitting
-            ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⚙</span> Analyzing...</>
+            ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⚙</span> Analyzing &amp; Saving...</>
             : <><Send size={18} /> Analyze &amp; Submit</>
           }
         </button>
@@ -210,7 +240,7 @@ const LogVitals = () => {
             )}
 
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-              This reading has been saved to your history.
+              This reading has been saved to your health record.
             </p>
           </div>
         </div>
