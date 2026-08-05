@@ -24,7 +24,7 @@ import { supabase } from '../lib/supabase';
  * @returns {Promise<string>}  - patients.id UUID
  */
 export async function getOrCreatePatientRecord(profileId, fullName, age = null) {
-  if (!profileId) throw new Error('profileId is required');
+  if (!profileId) return null;
 
   // Check if a patient record already linked to this profile exists
   const { data: existing, error: fetchErr } = await supabase
@@ -39,27 +39,38 @@ export async function getOrCreatePatientRecord(profileId, fullName, age = null) 
 
   if (existing?.id) return existing.id;
 
-  // Create a new patients row
-  const { data: created, error: insertErr } = await supabase
-    .from('patients')
-    .insert({
-      name: fullName || 'Patient',
-      age: age || null,
-      linked_profile_id: profileId,
-      created_by: profileId,
-    })
-    .select('id')
-    .single();
+  // Create a new patients row — wrap in try/catch so FK errors don't
+  // block the vital reading from being saved with profile_id only.
+  try {
+    const { data: created, error: insertErr } = await supabase
+      .from('patients')
+      .insert({
+        name: fullName || 'Patient',
+        age:  age     || null,
+        linked_profile_id: profileId,
+        // omit created_by — it may not exist in profiles yet
+      })
+      .select('id')
+      .single();
 
-  if (insertErr) throw new Error(`Failed to create patient record: ${insertErr.message}`);
+    if (insertErr) {
+      console.warn('[supabase_db] Could not create patients row:', insertErr.message);
+      return null;
+    }
 
-  // Back-link the profile row with the new patients.id
-  await supabase
-    .from('profiles')
-    .update({ linked_patient_id: created.id })
-    .eq('id', profileId);
+    // Best-effort: back-link the profile row
+    await supabase
+      .from('profiles')
+      .update({ linked_patient_id: created.id })
+      .eq('id', profileId)
+      .then(() => {})
+      .catch(() => {});
 
-  return created.id;
+    return created.id;
+  } catch (err) {
+    console.warn('[supabase_db] getOrCreatePatientRecord error:', err.message);
+    return null;
+  }
 }
 
 
