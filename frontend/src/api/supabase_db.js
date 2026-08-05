@@ -210,11 +210,10 @@ function mapVitalRow(row) {
  * @param {string} fetalStatus - 'Normal' | 'Suspect' | 'Pathological'
  */
 export async function insertCtgReading(profileId, patientId, ctgData, fetalStatus = null) {
-  if (!profileId) throw new Error('profileId is required');
-
+  // profileId may be null when called from a clinician view (patient profile unknown)
   const { error } = await supabase.from('ctg_readings').insert({
     patient_id:           patientId || null,
-    profile_id:           profileId,
+    profile_id:           profileId || null,
     abnormal_stv:         ctgData.abnormalShortTermVariability,
     pct_abnormal_ltv:     ctgData.percentageOfTimeWithAbnormalLongTermVariability,
     accelerations:        ctgData.accelerations,

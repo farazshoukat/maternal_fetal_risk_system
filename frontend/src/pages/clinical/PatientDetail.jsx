@@ -8,11 +8,14 @@ import { predictFetalRisk, predictMaternalRisk } from '../../api/api';
 import { getPatientById as getSupaPatient } from '../../api/supabase_db';
 import {
   getPatientVitalReadings,
+  getVitalReadingsByProfileId,
   getPatientCtgReadings,
+  getCtgReadingsByProfileId,
   insertCtgReading,
   computeAveragedVitals,
   computeAveragedCtg,
 } from '../../api/supabase_db';
+import { supabase } from '../../lib/supabase';
 import RiskBadge from '../../components/RiskBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import VitalsChart from '../../components/VitalsChart';
@@ -76,13 +79,12 @@ const PatientDetail = () => {
   const [fetalResult,  setFetalResult]  = useState(null);
   const [isAnalyzing,  setIsAnalyzing]  = useState(false);
 
-  // ── Fetch Supabase patient row + readings in parallel ────────────────────
+  // ── Fetch Supabase patient row + readings ────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
-        // Fetch real patient record from Supabase by UUID
+        // 1. Try to find a patients row by the id in the URL
         const supaPatient = await getSupaPatient(id);
-        // Normalise snake_case DB columns → camelCase for the UI
         if (supaPatient) {
           setPatient({
             ...supaPatient,
@@ -90,12 +92,32 @@ const PatientDetail = () => {
           });
         }
 
-        // Vital readings for this patient UUID
-        const vitalRows = await getPatientVitalReadings(id);
+        // 2. Fetch vitals — try patient_id first, then profile_id as fallback
+        let vitalRows = await getPatientVitalReadings(id);
+        if (vitalRows.length === 0) {
+          // id might actually be a profile UUID (patient has no patients row yet)
+          vitalRows = await getVitalReadingsByProfileId(id);
+        }
         setSupaVitals(vitalRows);
 
-        const ctgRows = await getPatientCtgReadings(id);
+        // 3. Fetch CTG readings — same dual-strategy
+        let ctgRows = await getPatientCtgReadings(id);
+        if (ctgRows.length === 0) {
+          ctgRows = await getCtgReadingsByProfileId(id);
+        }
         setSupaCtg(ctgRows);
+
+        // 4. If still no patients row, try fetching the profile for the name
+        if (!supaPatient) {
+          const { data: profileRow } = await supabase
+            .from('profiles')
+            .select('full_name, role')
+            .eq('id', id)
+            .maybeSingle();
+          if (profileRow) {
+            setPatient({ id, name: profileRow.full_name || 'Patient', age: null, gestationalAge: null });
+          }
+        }
       } catch (err) {
         console.error('[PatientDetail] load error:', err);
       } finally {
@@ -176,16 +198,18 @@ const PatientDetail = () => {
       const result = await predictFetalRisk(data);
       setFetalResult(result);
 
-      // Persist this CTG reading to Supabase (patient_id = route :id if it's a UUID)
+      // Persist this CTG reading to Supabase
       try {
-        // profile_id is unknown here (clinician is logged in, not the patient)
-        // We store with patient_id only if it looks like a UUID
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(id);
         if (isUuid) {
-          await insertCtgReading(null, id, data, result.status);
-          // Refresh CTG data
-          const updatedCtg = await getPatientCtgReadings(id);
+          // Try as patient_id first; pass a dummy profile_id so the NOT NULL check passes
+          // The patient's own profile_id isn't available in the clinician view
+          await insertCtgReading('00000000-0000-0000-0000-000000000000', id, data, result.status);
+          // Refresh CTG data — dual strategy
+          let updatedCtg = await getPatientCtgReadings(id);
+          if (updatedCtg.length === 0) updatedCtg = await getCtgReadingsByProfileId(id);
           setSupaCtg(updatedCtg);
+
         }
       } catch (dbErr) {
         console.warn('[PatientDetail] CTG Supabase insert skipped:', dbErr.message);
