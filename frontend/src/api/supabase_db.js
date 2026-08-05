@@ -334,26 +334,77 @@ export function computeAveragedCtg(readings) {
 // ── Patients listing (clinical) ───────────────────────────────────────────────
 
 /**
- * Fetch all patients records (clinical staff only).
- * Also attempts to join with their latest vital reading.
+ * Fetch ALL patients for the clinical dashboard.
  *
- * @returns {Promise<Array>}
+ * Strategy: three independent queries merged in JS so that:
+ *   1. Every profile with role='patient' appears — even those who haven't
+ *      submitted vitals yet (no patients row, no vital_readings yet).
+ *   2. Vital readings are attached correctly whether they were stored with
+ *      patient_id or only profile_id.
+ *
+ * @returns {Promise<Array>}  Normalised patient objects with vital_readings[]
  */
 export async function getAllPatients() {
-  const { data, error } = await supabase
-    .from('patients')
-    .select(`
-      id, name, age, gestational_age, created_at, linked_profile_id,
-      vital_readings(id, systolic_bp, diastolic_bp, heart_rate, blood_sugar, risk_level, recorded_at)
-    `)
-    .order('created_at', { ascending: false });
+  // ── 1. All patient profiles ──────────────────────────────────────────────
+  const { data: profiles, error: profilesErr } = await supabase
+    .from('profiles')
+    .select('id, full_name, role, created_at')
+    .eq('role', 'patient');
 
-  if (error) {
-    console.warn('[supabase_db] Error fetching patients:', error.message);
+  if (profilesErr) {
+    console.warn('[supabase_db] Error fetching profiles:', profilesErr.message);
     return [];
   }
 
-  return data || [];
+  // ── 2. All patient records (clinical rows) ───────────────────────────────
+  const { data: patientRecords } = await supabase
+    .from('patients')
+    .select('id, name, age, gestational_age, created_at, linked_profile_id');
+
+  // Build lookup: profile_id → patient record
+  const patientByProfileId = {};
+  (patientRecords || []).forEach(p => {
+    if (p.linked_profile_id) patientByProfileId[p.linked_profile_id] = p;
+  });
+
+  // ── 3. All vital readings ────────────────────────────────────────────────
+  const { data: allVitals } = await supabase
+    .from('vital_readings')
+    .select('id, patient_id, profile_id, systolic_bp, diastolic_bp, heart_rate, blood_sugar, risk_level, recorded_at')
+    .order('recorded_at', { ascending: false });
+
+  // Build lookups: patient_id → readings[], profile_id → readings[]
+  const vitalsByPatientId  = {};
+  const vitalsByProfileId  = {};
+  (allVitals || []).forEach(v => {
+    if (v.patient_id) {
+      (vitalsByPatientId[v.patient_id]  ||= []).push(v);
+    }
+    if (v.profile_id) {
+      (vitalsByProfileId[v.profile_id] ||= []).push(v);
+    }
+  });
+
+  // ── 4. Merge: one entry per patient profile ──────────────────────────────
+  const merged = (profiles || []).map(profile => {
+    const rec      = patientByProfileId[profile.id];           // may be undefined
+    const readings = rec
+      ? (vitalsByPatientId[rec.id] || vitalsByProfileId[profile.id] || [])
+      : (vitalsByProfileId[profile.id] || []);
+
+    return {
+      id:                rec?.id              || profile.id,   // prefer patients.id
+      name:              rec?.name            || profile.full_name || 'Unknown Patient',
+      age:               rec?.age             ?? null,
+      gestational_age:   rec?.gestational_age ?? null,
+      created_at:        rec?.created_at      || profile.created_at,
+      linked_profile_id: profile.id,
+      vital_readings:    readings,
+    };
+  });
+
+  // Sort newest-registered first
+  return merged.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
 
 /**

@@ -489,6 +489,85 @@ const PatientDetail = () => {
         </div>
       </div>
 
+      {/* ── Vitals History Table ──────────────────────────────────────────── */}
+      {supaVitals.length > 0 && (
+        <div className="glass-panel animate-fade-in" style={{ padding: '1.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+            <Activity size={18} color="var(--color-accent)" />
+            <h3 style={{ margin: 0, fontSize: '1rem' }}>Vitals Reading History</h3>
+            <span style={{
+              padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 700,
+              background: 'rgba(14,165,233,0.15)', color: 'var(--color-accent)',
+            }}>
+              {supaVitals.length} total
+            </span>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.825rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.02)' }}>
+                  {['Date & Time', 'Blood Pressure', 'Heart Rate', 'Blood Sugar', 'Body Temp', 'Age', 'Risk Level', 'Recorded By'].map(h => (
+                    <th key={h} style={{
+                      padding: '0.75rem 1rem', fontWeight: 600,
+                      color: 'var(--color-text-secondary)', fontSize: '0.72rem',
+                      textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap',
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {supaVitals.map((v, i) => (
+                  <tr
+                    key={v.id || i}
+                    style={{
+                      borderBottom: i < supaVitals.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <td style={{ padding: '0.75rem 1rem', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                      {v.recordedAt
+                        ? new Date(v.recordedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : v.date || '—'}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#ef4444' }}>
+                      {v.systolicBP}/{v.diastolicBP} <span style={{ fontWeight: 400, color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>mmHg</span>
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', color: '#f59e0b' }}>
+                      {v.heartRate} <span style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>bpm</span>
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', color: '#0ea5e9' }}>
+                      {v.bloodSugar} <span style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>mmol/L</span>
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', color: '#10b981' }}>
+                      {v.bodyTemp != null ? <>{v.bodyTemp} <span style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>°C</span></> : <span style={{ color: 'var(--color-text-muted)' }}>—</span>}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', color: 'var(--color-text-secondary)' }}>
+                      {v.age ?? '—'}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <RiskBadge riskLevel={v.risk || '—'} size="sm" />
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <span style={{
+                        padding: '0.15rem 0.5rem', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600,
+                        background: v.recordedBy === 'clinician' ? 'rgba(139,92,246,0.15)' : 'rgba(16,185,129,0.12)',
+                        color: v.recordedBy === 'clinician' ? '#8b5cf6' : '#10b981',
+                        border: `1px solid ${v.recordedBy === 'clinician' ? 'rgba(139,92,246,0.25)' : 'rgba(16,185,129,0.25)'}`,
+                      }}>
+                        {v.recordedBy || 'patient'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
   );
