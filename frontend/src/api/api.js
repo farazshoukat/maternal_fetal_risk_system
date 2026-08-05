@@ -13,7 +13,7 @@ import { mockPatients, mockCurrentUser } from './mockData';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 const LS_KEY   = 'mfrs_vitals_history';
 
 /** Helper: simulate latency for the mock path */
