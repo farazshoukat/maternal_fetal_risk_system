@@ -47,7 +47,8 @@ const LogVitals = () => {
       const prediction = await predictMaternalRisk(numericData);
       setResult(prediction);
 
-      // ── 2. Persist to Supabase vital_readings (primary) ───────────────────
+      // ── 2. Persist to Supabase vital_readings (primary source of truth) ───────
+      let supabaseOk = false;
       if (user?.id) {
         try {
           // Ensure a patients row exists for this user and get its UUID
@@ -63,14 +64,18 @@ const LogVitals = () => {
             prediction.riskLevel,
             'patient'
           );
+          supabaseOk = true;
         } catch (dbErr) {
-          console.warn('[LogVitals] Supabase insert failed, falling back to localStorage:', dbErr.message);
-          // Graceful fallback — don't block the user
+          console.warn('[LogVitals] Supabase insert failed, will fall back to localStorage:', dbErr.message);
+          // supabaseOk remains false — localStorage fallback runs below
         }
       }
 
-      // ── 3. Fallback: also write to localStorage ───────────────────────────
-      await submitVitals(numericData, prediction);
+      // ── 3. Offline-only fallback: localStorage (only when Supabase is unavailable) ──
+      // This prevents a permanent duplicate copy from diverging across devices.
+      if (!supabaseOk) {
+        await submitVitals(numericData, prediction);
+      }
 
       // ── 4. Fire n8n alerts ────────────────────────────────────────────────
       if (prediction.riskLevel.includes('High')) {

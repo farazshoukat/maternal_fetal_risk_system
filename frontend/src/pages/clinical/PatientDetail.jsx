@@ -4,8 +4,8 @@ import {
   ArrowLeft, Activity, Droplet, HeartPulse, Stethoscope,
   Thermometer, BarChart2, Database, RefreshCw
 } from 'lucide-react';
-import { getPatientById as getMockPatient, predictFetalRisk } from '../../api/api';
-import { predictMaternalRisk } from '../../api/api';
+import { predictFetalRisk, predictMaternalRisk } from '../../api/api';
+import { getPatientById as getSupaPatient } from '../../api/supabase_db';
 import {
   getPatientVitalReadings,
   getPatientCtgReadings,
@@ -76,16 +76,21 @@ const PatientDetail = () => {
   const [fetalResult,  setFetalResult]  = useState(null);
   const [isAnalyzing,  setIsAnalyzing]  = useState(false);
 
-  // ── Fetch mock patient + Supabase data in parallel ────────────────────────
+  // ── Fetch Supabase patient row + readings in parallel ────────────────────
   useEffect(() => {
     const load = async () => {
       try {
-        // Fetch mock patient (for charts using historical mock data)
-        const mockData = await getMockPatient(id).catch(() => null);
-        setPatient(mockData);
+        // Fetch real patient record from Supabase by UUID
+        const supaPatient = await getSupaPatient(id);
+        // Normalise snake_case DB columns → camelCase for the UI
+        if (supaPatient) {
+          setPatient({
+            ...supaPatient,
+            gestationalAge: supaPatient.gestational_age || null,
+          });
+        }
 
-        // Try to get Supabase vital readings for this patient UUID
-        // The route :id may be a mock ID (e.g. "p-001") or a Supabase UUID
+        // Vital readings for this patient UUID
         const vitalRows = await getPatientVitalReadings(id);
         setSupaVitals(vitalRows);
 
@@ -202,7 +207,15 @@ const PatientDetail = () => {
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) return <LoadingSpinner text="Loading patient profile..." />;
-  if (!patient && supaVitals.length === 0) return <div style={{ padding: '2rem' }}>Patient not found.</div>;
+  // Show not-found only if there's truly nothing — a real patient always has
+  // at least a patients row OR at least one vital reading.
+  if (!patient && supaVitals.length === 0) {
+    return (
+      <div style={{ padding: '2rem', color: 'var(--color-text-secondary)' }}>
+        Patient not found. This ID may be invalid or the patient record has not been created yet.
+      </div>
+    );
+  }
 
   const fetalResultColor = fetalResult
     ? fetalResult.status === 'Normal'
@@ -212,20 +225,19 @@ const PatientDetail = () => {
       : 'var(--color-danger)'
     : null;
 
-  // Chart data: use Supabase rows if available (map to chart-compatible shape), else mock
-  const chartData = supaVitals.length > 0
-    ? [...supaVitals].reverse().map(r => ({
-        date: r.date,
-        systolicBP:  r.systolicBP,
-        diastolicBP: r.diastolicBP,
-        heartRate:   r.heartRate,
-        bloodSugar:  r.bloodSugar,
-        bodyTemp:    r.bodyTemp,
-      }))
-    : patient?.vitalsHistory || [];
+  // Chart data: Supabase readings mapped to chart-compatible shape (oldest first)
+  const chartData = [...supaVitals].reverse().map(r => ({
+    date:        r.date,
+    systolicBP:  r.systolicBP,
+    diastolicBP: r.diastolicBP,
+    heartRate:   r.heartRate,
+    bloodSugar:  r.bloodSugar,
+    bodyTemp:    r.bodyTemp,
+  }));
 
-  const patientName = patient?.name || 'Patient';
-  const patientAge  = patient?.age  || (supaVitals[0]?.age ?? '—');
+  const patientName     = patient?.name           || 'Patient';
+  const patientAge      = patient?.age             ?? (supaVitals[0]?.age ?? '—');
+  const gestationalAge  = patient?.gestationalAge  || null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -239,7 +251,7 @@ const PatientDetail = () => {
           <div style={{ display: 'flex', gap: '1rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem', flexWrap: 'wrap' }}>
             <span>ID: {id}</span>
             {patientAge && <span>Age: {patientAge}</span>}
-            {patient?.gestationalAge && <span>Gestational Age: {patient.gestationalAge}</span>}
+            {gestationalAge && <span>Gestational Age: {gestationalAge}</span>}
           </div>
         </div>
         <div style={{ display: 'flex', gap: '1.5rem', flexShrink: 0 }}>
@@ -363,28 +375,23 @@ const PatientDetail = () => {
         </div>
       )}
 
-      {/* Latest / single-reading Vitals Summary (shown from mock or latest Supabase row) */}
-      {displayVitals && (
+      {/* Latest / single-reading Vitals Summary (only shown when we don't have Supabase averages yet) */}
+      {displayVitals && vitalsSource !== 'averaged' && (
         <div>
           <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: vitalsSource === 'averaged' ? '#10b981' : '#f59e0b', display: 'inline-block' }} />
-            {vitalsSource === 'averaged'
-              ? `Showing averages from ${vitalsCount} Supabase readings above ↑. Raw trend below ↓.`
-              : 'Showing latest vitals from mock data (no Supabase readings found for this patient ID).'
-            }
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
+            No Supabase vitals readings yet for this patient.
           </div>
-          {vitalsSource !== 'averaged' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-              <StatCard icon={<Activity size={20} />} title="Blood Pressure"
-                value={`${displayVitals.systolicBP}/${displayVitals.diastolicBP}`} unit="mmHg" color="#ef4444" />
-              <StatCard icon={<HeartPulse size={20} />} title="Heart Rate"
-                value={displayVitals.heartRate} unit="bpm" color="#f59e0b" />
-              <StatCard icon={<Droplet size={20} />} title="Blood Sugar"
-                value={displayVitals.bloodSugar} unit="mmol/L" color="#0ea5e9" />
-              <StatCard icon={<Thermometer size={20} />} title="Body Temp"
-                value={displayVitals.bodyTemp} unit="°C" color="#10b981" />
-            </div>
-          )}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+            <StatCard icon={<Activity size={20} />} title="Blood Pressure"
+              value={`${displayVitals.systolicBP}/${displayVitals.diastolicBP}`} unit="mmHg" color="#ef4444" />
+            <StatCard icon={<HeartPulse size={20} />} title="Heart Rate"
+              value={displayVitals.heartRate} unit="bpm" color="#f59e0b" />
+            <StatCard icon={<Droplet size={20} />} title="Blood Sugar"
+              value={displayVitals.bloodSugar} unit="mmol/L" color="#0ea5e9" />
+            <StatCard icon={<Thermometer size={20} />} title="Body Temp"
+              value={displayVitals.bodyTemp} unit="°C" color="#10b981" />
+          </div>
         </div>
       )}
 

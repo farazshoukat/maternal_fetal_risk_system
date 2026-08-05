@@ -11,28 +11,32 @@ export function AuthProvider({ children }) {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
-  // Build a profile from user_metadata as a fallback when the profiles table
-  // row doesn't exist yet (e.g. right after sign-up before the trigger fires).
+  // Always build a profile from user_metadata — this is embedded in the JWT
+  // and is available immediately without a DB round-trip.
   function profileFromMetadata(u) {
     const meta = u?.user_metadata || {};
-    if (!meta.role) return null;
-    return { role: meta.role, full_name: meta.full_name || meta.email || u.email };
+    const role = meta.role || meta.user_role;
+    return {
+      role: role || 'patient',          // default to patient if role not set
+      full_name: meta.full_name || meta.name || u?.email || 'User',
+    };
   }
 
   async function fetchProfile(userId, userObj) {
+    // Start with metadata-based profile immediately (no loading delay)
+    const metaProfile = profileFromMetadata(userObj);
     setProfileLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('role, full_name')
         .eq('id', userId)
-        .single();
-      if (error) {
-        console.warn('[Auth] Could not fetch profile:', error.message);
-        // Fall back to user_metadata so sign-in still works
-        return profileFromMetadata(userObj);
-      }
-      return data;
+        .maybeSingle();           // maybeSingle() returns null (not error) when no row found
+      if (!error && data) return data;  // DB row wins if it exists
+      if (error) console.warn('[Auth] profiles table fetch:', error.message);
+      return metaProfile;              // always fall back to JWT metadata
+    } catch {
+      return metaProfile;
     } finally {
       setProfileLoading(false);
     }

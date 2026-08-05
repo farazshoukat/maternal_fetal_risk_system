@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Users, LayoutDashboard, Bell, Search, Stethoscope, LogOut, Zap, BarChart2 } from 'lucide-react';
-import { useAlerts } from '../context/AlertContext';
+import { Users, LayoutDashboard, Search, Stethoscope, LogOut, BarChart2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const ClinicalLayout = () => {
   const location  = useLocation();
   const navigate  = useNavigate();
-  const { alertLog } = useAlerts();
   const { profile, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
   const isActive = (path) => location.pathname.startsWith(path);
-
-  const unreadAlerts = alertLog.filter(a => a.riskLevel.includes('High')).length;
 
   const displayName = profile?.full_name || 'Clinician';
   // Build initials from full name (max 2 chars)
@@ -107,10 +103,7 @@ const ClinicalLayout = () => {
           <NavLink to="/clinical/patients"  icon={Users}           label="Patients" />
           <NavLink to="/clinical/analytics" icon={BarChart2}       label="Analytics" />
 
-          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 0.5rem', margin: '1rem 0 0.5rem' }}>
-            Automation
-          </div>
-          <NavLink to="/clinical/alerts" icon={Zap} label="Alert Workflows" badge={unreadAlerts} />
+
         </nav>
 
         {/* Bottom — profile + logout */}
@@ -175,34 +168,6 @@ const ClinicalLayout = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            {/* n8n status pill */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.35rem 0.875rem', borderRadius: '999px',
-              background: 'rgba(255,100,22,0.1)', border: '1px solid rgba(255,100,22,0.2)',
-              fontSize: '0.75rem', fontWeight: 600, color: '#ff6416',
-            }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6416', animation: 'pulse-ok 2s ease-in-out infinite' }} />
-              n8n Active
-            </div>
-
-            {/* Bell */}
-            <Link to="/clinical/alerts" style={{ position: 'relative', display: 'flex' }}>
-              <Bell size={20} color="var(--color-text-secondary)" />
-              {unreadAlerts > 0 && (
-                <span style={{
-                  position: 'absolute', top: '-4px', right: '-4px',
-                  width: '16px', height: '16px', borderRadius: '50%',
-                  background: 'var(--color-danger)', color: 'white',
-                  fontSize: '0.55rem', fontWeight: 800,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 0 8px rgba(239,68,68,0.6)',
-                }}>
-                  {unreadAlerts}
-                </span>
-              )}
-            </Link>
-
             {/* User pill */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderLeft: '1px solid var(--color-border)', paddingLeft: '1.25rem' }}>
               <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem' }}>
