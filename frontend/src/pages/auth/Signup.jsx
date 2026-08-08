@@ -55,9 +55,7 @@ export default function Signup() {
     setLoading(true);
     try {
       await signUp({ email, password, fullName, role: selectedRole });
-      setSuccess(
-        'Account created! Please check your email for a confirmation link, then sign in.'
-      );
+      setSuccess('Account created successfully! Redirecting to login...');
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
       setError(err.message || 'Sign-up failed. Please try again.');
