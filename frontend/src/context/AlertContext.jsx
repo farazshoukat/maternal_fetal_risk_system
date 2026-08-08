@@ -22,7 +22,6 @@ export const AlertProvider = ({ children }) => {
       channel: 'slack',
       message: 'Blood pressure 142/92 — critical threshold exceeded',
       status: 'delivered',
-      workflowId: 'wf-maternal-risk-v2',
     },
     {
       id: 'a-002',
@@ -33,7 +32,6 @@ export const AlertProvider = ({ children }) => {
       channel: 'sms',
       message: 'BP 152/99 + Blood Sugar 8.7 — immediate review required',
       status: 'delivered',
-      workflowId: 'wf-maternal-risk-v2',
     },
     {
       id: 'a-003',
@@ -44,7 +42,6 @@ export const AlertProvider = ({ children }) => {
       channel: 'email',
       message: 'BP trending upward — 128/84 over 4 visits',
       status: 'delivered',
-      workflowId: 'wf-maternal-risk-v2',
     },
     {
       id: 'a-004',
@@ -55,7 +52,6 @@ export const AlertProvider = ({ children }) => {
       channel: 'email',
       message: 'Elevated blood sugar 7.0 — dietary review recommended',
       status: 'delivered',
-      workflowId: 'wf-maternal-risk-v2',
     },
   ]);
 
@@ -71,30 +67,8 @@ export const AlertProvider = ({ children }) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  const triggerN8nAlert = useCallback((patientName, patientId, riskLevel, message, channel = 'slack') => {
-    const newAlert = {
-      id: `a-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      patientName,
-      patientId,
-      riskLevel,
-      channel,
-      message,
-      status: 'delivered',
-      workflowId: 'wf-maternal-risk-v2',
-    };
-    setAlertLog(prev => [newAlert, ...prev]);
-
-    const channelEmoji = { slack: '💬', sms: '📱', email: '📧' }[channel] || '🔔';
-    addToast({
-      type: riskLevel.includes('High') ? 'danger' : 'warning',
-      title: `⚡ n8n Workflow Triggered`,
-      message: `${channelEmoji} ${channel.toUpperCase()} alert sent — ${patientName} (${riskLevel})`,
-    });
-  }, [addToast]);
-
   return (
-    <AlertContext.Provider value={{ toasts, alertLog, addToast, dismissToast, triggerN8nAlert }}>
+    <AlertContext.Provider value={{ toasts, alertLog, addToast, dismissToast }}>
       {children}
     </AlertContext.Provider>
   );

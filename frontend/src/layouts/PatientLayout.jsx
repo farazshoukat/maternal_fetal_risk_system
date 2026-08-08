@@ -31,7 +31,7 @@ const PatientLayout = () => {
           {/* Brand */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Activity color="var(--color-accent)" />
-            <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Patient Portal</h2>
+            <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Doctors Poly Clinic</h2>
           </div>
 
           {/* User info + Logout */}

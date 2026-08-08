@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Stethoscope } from 'lucide-react';
 
 const ROLES = [
   {
     id: 'patient',
     label: 'Patient',
-    icon: '🤱',
+    icon: '•',
     description: 'Log vitals & track your pregnancy health',
     gradient: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
     glow: 'rgba(139,92,246,0.35)',
@@ -14,7 +15,7 @@ const ROLES = [
   {
     id: 'doctor',
     label: 'Doctor / Clinician',
-    icon: '🩺',
+    icon: '•',
     description: 'Clinical dashboard & risk assessments',
     gradient: 'linear-gradient(135deg, #06B6D4, #0E7490)',
     glow: 'rgba(6,182,212,0.35)',
@@ -73,10 +74,10 @@ export default function Signup() {
       <div className="auth-card auth-card--wide">
         {/* Logo */}
         <div className="auth-logo">
-          <span className="auth-logo-icon">🌸</span>
+          <Stethoscope className="auth-logo-icon text-glow-blue" color="var(--color-accent)" />
           <div>
-            <p className="auth-logo-sub">Maternal-Fetal</p>
-            <h1 className="auth-logo-title">Risk System</h1>
+            <p className="auth-logo-sub">Doctors Poly Clinic</p>
+            <h1 className="auth-logo-title">Clinic System</h1>
           </div>
         </div>
 
@@ -94,7 +95,16 @@ export default function Signup() {
                 '--role-gradient': r.gradient,
                 '--role-glow': r.glow,
               } : {}}
-              onClick={() => setSelectedRole(r.id)}
+              onClick={() => {
+                if (r.id === 'doctor') {
+                  const pk = window.prompt("Enter Clinical Passkey:");
+                  if (pk !== '78607860') {
+                    alert('Invalid passkey. Access denied.');
+                    return;
+                  }
+                }
+                setSelectedRole(r.id);
+              }}
             >
               <span className="auth-role-icon">{r.icon}</span>
               <span className="auth-role-label">{r.label}</span>
@@ -152,7 +162,7 @@ export default function Signup() {
                   onClick={() => setShowPwd(v => !v)}
                   aria-label={showPwd ? 'Hide password' : 'Show password'}
                 >
-                  {showPwd ? '🙈' : '👁️'}
+                  {showPwd ? 'Hide' : 'Show'}
                 </button>
               </div>
             </div>

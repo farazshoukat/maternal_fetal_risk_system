@@ -38,21 +38,20 @@ const LandingPage = () => {
       <div style={{ position: 'fixed', top: '40%', right: '10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(239,68,68,0.06) 0%, transparent 70%)', borderRadius: '50%', zIndex: -1 }} />
 
       {/* Header */}
-      <header style={{ padding: '1.25rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(15,23,42,0.7)' }}>
+      <header style={{ padding: '1.25rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.05)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(255,255,255,0.8)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ background: 'var(--gradient-primary)', padding: '0.5rem', borderRadius: '10px', boxShadow: '0 0 20px rgba(14,165,233,0.4)' }}>
             <Stethoscope size={22} color="white" />
           </div>
           <div>
-            <span style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.03em' }}>Maternal</span>
-            <span style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.03em', background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AI</span>
+            <span style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.03em' }}>Doctors Poly Clinic</span>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           {/* Tech badges */}
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {['FastAPI', 'React', 'n8n', 'Random Forest'].map(tech => (
+            {['FastAPI', 'React', 'Random Forest'].map(tech => (
               <span key={tech} style={{
                 padding: '0.25rem 0.6rem',
                 borderRadius: '6px',
@@ -83,26 +82,23 @@ const LandingPage = () => {
             fontSize: '0.8rem', color: 'var(--color-accent)', fontWeight: 600,
             marginBottom: '2rem',
           }}>
-            <Zap size={14} /> Powered by Two-Tier AI Architecture + n8n Automation
+            <Activity size={14} /> Powered by Two-Tier AI Architecture
           </div>
 
           <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: 900, lineHeight: 1.05, marginBottom: '1.5rem', letterSpacing: '-0.04em' }}>
             Predictive Care for<br />
             <span style={{ background: 'linear-gradient(135deg, #0ea5e9, #3b82f6, #10b981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Mother &amp; Child
+              Patients
             </span>
           </h1>
           <p style={{ fontSize: '1.125rem', color: 'var(--color-text-secondary)', maxWidth: '600px', margin: '0 auto 2.5rem', lineHeight: 1.7 }}>
-            AI-driven vital sign monitoring, real-time risk classification, and automated n8n alert workflows for proactive maternal-fetal healthcare.
+            AI-driven vital sign monitoring and real-time risk classification for proactive healthcare.
           </p>
 
           {/* CTA buttons */}
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/clinical/dashboard" className="btn btn-primary" style={{ padding: '0.875rem 2rem', fontSize: '1rem', borderRadius: '12px', boxShadow: '0 0 30px rgba(14,165,233,0.3)' }}>
-              <Stethoscope size={20} /> Clinical Dashboard
-            </Link>
-            <Link to="/patient/log" className="btn btn-outline" style={{ padding: '0.875rem 2rem', fontSize: '1rem', borderRadius: '12px' }}>
-              <User size={20} /> Patient Portal
+            <Link to="/login" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.125rem', borderRadius: '12px', boxShadow: '0 0 30px rgba(22,163,74,0.3)', fontWeight: 700 }}>
+              Let's keep the baby safe
             </Link>
           </div>
         </section>
@@ -121,14 +117,13 @@ const LandingPage = () => {
             {[
               { label: 'Active Patients', value: 124, suffix: '', color: '#0ea5e9', icon: <User size={18}/> },
               { label: 'AI Assessments', value: 89, suffix: '+', color: '#10b981', icon: <Brain size={18}/> },
-              { label: 'Critical Alerts', value: 3, suffix: ' today', color: '#ef4444', icon: <AlertTriangle size={18}/> },
-              { label: 'n8n Workflows', value: 12, suffix: ' active', color: '#ff6416', icon: <Zap size={18}/> },
+              { label: 'Critical Alerts', value: 3, suffix: ' today', color: '#ef4444', icon: <AlertTriangle size={18}/> }
             ].map((stat, i) => (
               <div key={stat.label} style={{
                 padding: '2rem 1.5rem',
-                background: 'rgba(15,23,42,0.8)',
+                background: 'rgba(255,255,255,0.8)',
                 textAlign: 'center',
-                borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                borderRight: i < 2 ? '1px solid rgba(0,0,0,0.06)' : 'none',
               }}>
                 <div style={{ color: stat.color, marginBottom: '0.75rem' }}>{stat.icon}</div>
                 <div style={{ fontSize: '2.5rem', fontWeight: 900, color: stat.color, lineHeight: 1 }}>
@@ -167,7 +162,7 @@ const LandingPage = () => {
                 </div>
                 <div>
                   <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Clinical Dashboard</h3>
-                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', lineHeight: 1.6 }}>Monitor patients, run CTG fetal assessments, view analytics, and manage automated n8n alert workflows.</p>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', lineHeight: 1.6 }}>Monitor patients, run AI assessments, and view analytics for comprehensive care.</p>
                 </div>
                 <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-success)', fontWeight: 700, fontSize: '0.9rem' }}>
                   Enter Dashboard <ArrowRight size={16} />
@@ -199,7 +194,6 @@ const LandingPage = () => {
               {[
                 { label: 'FastAPI Backend', ok: true },
                 { label: 'ML Models', ok: true },
-                { label: 'n8n Webhooks', ok: true },
                 { label: 'DB Layer', ok: true },
               ].map(s => (
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>

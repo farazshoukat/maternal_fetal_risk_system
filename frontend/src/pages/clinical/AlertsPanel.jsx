@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAlerts } from '../../context/AlertContext';
-import N8nWorkflowDiagram from '../../components/N8nWorkflowDiagram';
 import { Bell, MessageSquare, Phone, Mail, Clock, User, AlertTriangle, CheckCircle, Zap, RefreshCw } from 'lucide-react';
 
 const channelIcon = (ch) => {
@@ -34,7 +33,7 @@ const formatTime = (iso) => {
 };
 
 const AlertsPanel = () => {
-  const { alertLog, triggerN8nAlert } = useAlerts();
+  const { alertLog } = useAlerts();
   const [isTriggered, setIsTriggered] = useState(false);
   const [simulating, setSimulating] = useState(false);
 
@@ -44,7 +43,7 @@ const AlertsPanel = () => {
     
     // Simulate workflow execution
     await new Promise(r => setTimeout(r, 2500));
-    triggerN8nAlert('Sarah Jenkins', 'p-001', 'High Risk', 'BP 148/96 — escalation protocol activated', 'slack');
+    // Alert logic removed
     
     await new Promise(r => setTimeout(r, 800));
     setSimulating(false);
@@ -61,17 +60,6 @@ const AlertsPanel = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h1 style={{ fontSize: '1.75rem', margin: 0 }}>Alert Automation</h1>
-            <span style={{
-              padding: '0.2rem 0.6rem',
-              borderRadius: '999px',
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              background: 'rgba(255,100,22,0.15)',
-              color: '#ff6416',
-              border: '1px solid rgba(255,100,22,0.3)',
-            }}>
-              Powered by n8n
-            </span>
           </div>
           <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>
             Real-time clinical alert workflow — SMS, Slack & Email notifications
@@ -123,14 +111,7 @@ const AlertsPanel = () => {
         ))}
       </div>
 
-      {/* n8n Workflow Diagram */}
-      <div className="glass-panel" style={{ padding: '1.75rem' }}>
-        <h3 style={{ marginBottom: '1.25rem', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Zap size={18} color="#ff6416" />
-          Automation Pipeline
-        </h3>
-        <N8nWorkflowDiagram isTriggered={isTriggered} />
-      </div>
+
 
       {/* Alert Log */}
       <div className="glass-panel" style={{ padding: '1.75rem' }}>
@@ -216,7 +197,7 @@ const AlertsPanel = () => {
                   {alert.message}
                 </div>
                 <div style={{ marginTop: '0.375rem', fontSize: '0.7rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>
-                  workflow: {alert.workflowId} · status: <span style={{ color: '#10b981' }}>{alert.status}</span>
+                  status: <span style={{ color: '#10b981' }}>{alert.status}</span>
                 </div>
               </div>
             </div>

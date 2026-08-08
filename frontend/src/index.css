@@ -1,32 +1,32 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Color Palette - Medical Dark Mode */
-  --color-bg-base: #0f172a;
-  --color-bg-surface: rgba(30, 41, 59, 0.7);
-  --color-bg-glass: rgba(15, 23, 42, 0.6);
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #94a3b8;
+  /* Color Palette - Clinic Light Mode */
+  --color-bg-base: #ffffff;
+  --color-bg-surface: rgba(241, 245, 249, 0.8);
+  --color-bg-glass: rgba(255, 255, 255, 0.8);
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
   --color-text-muted: #64748b;
   
   /* Accents & Status */
-  --color-accent: #0ea5e9;
-  --color-accent-hover: #0284c7;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --color-accent: #16a34a;
+  --color-accent-hover: #15803d;
+  --color-success: #16a34a;
+  --color-warning: #eab308;
+  --color-danger: #dc2626;
 
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #0ea5e9, #3b82f6);
-  --gradient-danger: linear-gradient(135deg, #ef4444, #f43f5e);
-  --gradient-success: linear-gradient(135deg, #10b981, #34d399);
+  --gradient-primary: linear-gradient(135deg, #22c55e, #16a34a);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
+  --gradient-success: linear-gradient(135deg, #22c55e, #16a34a);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 20px rgba(14, 165, 233, 0.3);
+  --shadow-glow: 0 0 20px rgba(22, 163, 74, 0.3);
 
   /* Radii */
   --radius-sm: 0.375rem;
@@ -50,9 +50,9 @@ body {
   min-height: 100vh;
   /* Subtle mesh gradient background */
   background-image: 
-    radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(22, 163, 74, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(22, 163, 74, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.02) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -84,26 +84,26 @@ a:hover {
 }
 
 .glass-card {
-  background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.4));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(241, 245, 249, 0.6));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .glass-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-glow);
-  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Form Elements */
 input, select, textarea {
   width: 100%;
   padding: 0.75rem 1rem;
-  background-color: rgba(15, 23, 42, 0.5);
+  background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text-primary);
@@ -115,8 +115,8 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
-  background-color: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+  background-color: #ffffff;
 }
 
 label {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Activity, Droplet, Thermometer, HeartPulse, Send, User, Zap, CheckCircle } from 'lucide-react';
+import { Activity, Droplet, Thermometer, HeartPulse, Send, User, Zap, CheckCircle, AlertTriangle } from 'lucide-react';
 import { predictMaternalRisk, submitVitals } from '../../api/api';
 import { insertVitalReading, getOrCreatePatientRecord } from '../../api/supabase_db';
 import RiskBadge from '../../components/RiskBadge';
@@ -7,7 +7,7 @@ import { useAlerts } from '../../context/AlertContext';
 import { useAuth } from '../../context/AuthContext';
 
 const LogVitals = () => {
-  const { triggerN8nAlert, addToast } = useAlerts();
+  const { addToast } = useAlerts();
   const { user, profile } = useAuth();
 
   const displayName = profile?.full_name || 'Patient';
@@ -77,37 +77,18 @@ const LogVitals = () => {
         await submitVitals(numericData, prediction);
       }
 
-      // ── 4. Fire n8n alerts ────────────────────────────────────────────────
-      if (prediction.riskLevel.includes('High')) {
-        triggerN8nAlert(
-          displayName,
-          'pat-current',
-          prediction.riskLevel,
-          `BP ${numericData.systolicBP}/${numericData.diastolicBP} mmHg | Sugar ${numericData.bloodSugar} mmol/L — immediate review`,
-          'slack'
-        );
-        setTimeout(() => {
-          triggerN8nAlert(
-            displayName,
-            'pat-current',
-            prediction.riskLevel,
-            `Emergency SMS dispatched to Dr. Smith`,
-            'sms'
-          );
-        }, 1500);
-      } else if (prediction.riskLevel.includes('Mid')) {
-        triggerN8nAlert(
-          displayName,
-          'pat-current',
-          prediction.riskLevel,
-          `Elevated readings logged — follow-up recommended`,
-          'email'
-        );
-      } else {
+      // n8n alerts removed
+      if (prediction.riskLevel.includes('Low')) {
         addToast({
           type: 'success',
           title: '✅ Vitals Recorded',
-          message: 'AI assessment complete — Low Risk detected. No alerts triggered.',
+          message: 'AI assessment complete — Low Risk detected.',
+        });
+      } else {
+        addToast({
+          type: prediction.riskLevel.includes('High') ? 'danger' : 'warning',
+          title: '⚠️ Action Recommended',
+          message: 'Elevated risk detected. Please consult your physician.',
         });
       }
     } catch (err) {
@@ -132,19 +113,7 @@ const LogVitals = () => {
         <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Log Today's Vitals</h1>
         <p style={{ color: 'var(--color-text-secondary)' }}>
           Enter your readings for instant AI assessment. Readings are saved to your health record.
-          High-risk readings automatically trigger n8n alert workflows.
         </p>
-      </div>
-
-      {/* n8n hint banner */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: '0.75rem',
-        padding: '0.875rem 1.25rem', borderRadius: '10px',
-        background: 'rgba(255,100,22,0.08)', border: '1px solid rgba(255,100,22,0.2)',
-        fontSize: '0.8rem', color: 'rgba(248,250,252,0.7)',
-      }}>
-        <Zap size={16} color="#ff6416" />
-        <span>Connected to <strong style={{ color: '#ff6416' }}>n8n automation</strong> — high-risk alerts fire Slack + SMS instantly. Readings sync to Supabase.</span>
       </div>
 
       <form onSubmit={handleSubmit} className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -216,10 +185,9 @@ const LogVitals = () => {
                 fontSize: '0.875rem', color: '#ef4444', textAlign: 'left',
               }}>
                 <div style={{ fontWeight: 700, marginBottom: '0.375rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Zap size={15} /> n8n Alert Triggered
+                  <AlertTriangle size={15} /> Immediate Action Required
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'rgba(248,250,252,0.7)' }}>
-                  💬 Slack + 📱 SMS notifications dispatched to Dr. Smith.<br />
+                <div style={{ fontSize: '0.8rem', color: 'rgba(15,23,42,0.7)' }}>
                   Please contact your healthcare provider immediately.
                 </div>
               </div>
@@ -231,10 +199,10 @@ const LogVitals = () => {
                 fontSize: '0.875rem', color: '#f59e0b', textAlign: 'left',
               }}>
                 <div style={{ fontWeight: 700, marginBottom: '0.375rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Zap size={15} /> n8n Alert Triggered
+                  <AlertTriangle size={15} /> Consult Doctor
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'rgba(248,250,252,0.7)' }}>
-                  📧 Email notification sent to clinic. Schedule a check-up soon.
+                <div style={{ fontSize: '0.8rem', color: 'rgba(15,23,42,0.7)' }}>
+                  Schedule a check-up soon to review your vitals.
                 </div>
               </div>
             )}

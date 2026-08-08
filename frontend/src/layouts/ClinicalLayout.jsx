@@ -78,19 +78,19 @@ const ClinicalLayout = () => {
         width: '260px',
         borderRight: '1px solid var(--color-border)',
         display: 'flex', flexDirection: 'column',
-        background: 'rgba(15,23,42,0.95)',
+        background: 'rgba(255,255,255,0.95)',
         backdropFilter: 'blur(20px)',
         position: 'fixed', top: 0, left: 0, bottom: 0,
         zIndex: 20,
       }}>
         {/* Logo */}
-        <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ background: 'var(--gradient-primary)', padding: '0.5rem', borderRadius: '10px', boxShadow: '0 0 15px rgba(14,165,233,0.3)' }}>
+        <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--color-border)' }}>
+          <div style={{ background: 'var(--gradient-primary)', padding: '0.5rem', borderRadius: '10px', boxShadow: '0 0 15px rgba(22,163,74,0.3)' }}>
             <Stethoscope size={22} color="white" />
           </div>
           <div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em' }}>MaternalAI</div>
-            <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Clinical Dashboard v2</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Doctors Poly Clinic</div>
+            <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Clinical Dashboard</div>
           </div>
         </div>
 
@@ -107,10 +107,10 @@ const ClinicalLayout = () => {
         </nav>
 
         {/* Bottom — profile + logout */}
-        <div style={{ padding: '1rem 0.875rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ padding: '1rem 0.875rem', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {/* Clinician profile pill */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: 'rgba(255,255,255,0.04)' }}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: 'rgba(0,0,0,0.04)' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem', flexShrink: 0 }}>
               {initials}
             </div>
             <div style={{ minWidth: 0 }}>
@@ -147,15 +147,15 @@ const ClinicalLayout = () => {
           height: '68px', borderBottom: '1px solid var(--color-border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 2rem',
-          background: 'rgba(15,23,42,0.85)',
+          background: 'rgba(255,255,255,0.85)',
           backdropFilter: 'blur(12px)',
           position: 'sticky', top: 0, zIndex: 10,
         }}>
           <div style={{
             display: 'flex', alignItems: 'center',
-            background: 'rgba(255,255,255,0.05)', borderRadius: '10px',
+            background: 'rgba(0,0,0,0.05)', borderRadius: '10px',
             padding: '0.5rem 1rem', width: '280px',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid var(--color-border)',
           }}>
             <Search size={16} color="var(--color-text-muted)" style={{ marginRight: '0.5rem', flexShrink: 0 }} />
             <input
@@ -170,7 +170,7 @@ const ClinicalLayout = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
             {/* User pill */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderLeft: '1px solid var(--color-border)', paddingLeft: '1.25rem' }}>
-              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem' }}>
+              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--gradient-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem' }}>
                 {initials}
               </div>
               <div>

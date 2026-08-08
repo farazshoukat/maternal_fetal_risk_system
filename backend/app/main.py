@@ -26,7 +26,6 @@ from app.schemas import (
     HealthResponse,
 )
 from app.predictor import MaternalRiskPredictor, predict_fetal_risk_heuristic
-from app.alerting import fire_n8n_alert
 
 
 
@@ -107,26 +106,6 @@ async def predict_maternal_risk(body: MaternalVitalsRequest):
             heart_rate=body.heartRate,
         )
 
-        # ── Fire n8n webhook alert (non-blocking background thread) ──────────
-        vitals_payload = {
-            "systolicBP":  body.systolicBP,
-            "diastolicBP": body.diastolicBP,
-            "bloodSugar":  body.bloodSugar,
-            "bodyTemp":    body.bodyTemp,
-            "heartRate":   body.heartRate,
-            "age":         body.age,
-        }
-        threading.Thread(
-            target=fire_n8n_alert,
-            kwargs={
-                "risk_level":   result["risk_level"],
-                "confidence":   result["probabilities"].get(result["risk_level"], result["confidence"]),
-                "vitals":       vitals_payload,
-                "patient_name": getattr(body, "patient_name", "Anonymous Patient"),
-            },
-            daemon=True,
-        ).start()
-        # ─────────────────────────────────────────────────────────────────────
 
         return result
     except RuntimeError as e:
