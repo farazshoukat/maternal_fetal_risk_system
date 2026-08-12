@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Stethoscope } from 'lucide-react';
+import clinicLogo from '../../assets/logo.png';
 
 const ROLES = [
   {
@@ -89,7 +89,7 @@ export default function Login() {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-logo">
-          <Stethoscope className="auth-logo-icon text-glow-blue" color="var(--color-accent)" />
+          <img src={clinicLogo} alt="Doctors Poly Clinic Logo" className="auth-logo-icon" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
           <div>
             <p className="auth-logo-sub">Doctors Poly Clinic</p>
             <h1 className="auth-logo-title">Clinic System</h1>

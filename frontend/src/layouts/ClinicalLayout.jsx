@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Users, LayoutDashboard, Search, Stethoscope, LogOut, BarChart2 } from 'lucide-react';
+import { Users, LayoutDashboard, Search, LogOut, BarChart2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import clinicLogo from '../assets/logo.png';
 
 const ClinicalLayout = () => {
   const location  = useLocation();
@@ -85,9 +86,7 @@ const ClinicalLayout = () => {
       }}>
         {/* Logo */}
         <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ background: 'var(--gradient-primary)', padding: '0.5rem', borderRadius: '10px', boxShadow: '0 0 15px rgba(22,163,74,0.3)' }}>
-            <Stethoscope size={22} color="white" />
-          </div>
+          <img src={clinicLogo} alt="Doctors Poly Clinic Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Doctors Poly Clinic</div>
             <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Clinical Dashboard</div>

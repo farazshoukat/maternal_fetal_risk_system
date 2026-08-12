@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, History, User, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import clinicLogo from '../assets/logo.png';
 
 const PatientLayout = () => {
   const location = useLocation();
@@ -30,7 +31,7 @@ const PatientLayout = () => {
         <div className="container flex-center" style={{ justifyContent: 'space-between' }}>
           {/* Brand */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Activity color="var(--color-accent)" />
+            <img src={clinicLogo} alt="Doctors Poly Clinic Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
             <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Doctors Poly Clinic</h2>
           </div>
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Stethoscope, User, ArrowRight, ShieldCheck, Brain, Zap, Activity, AlertTriangle, TrendingUp, Server, CheckCircle } from 'lucide-react';
+import { User, ArrowRight, ShieldCheck, Brain, Zap, Activity, AlertTriangle, TrendingUp, Server, CheckCircle } from 'lucide-react';
+import clinicLogo from '../assets/logo.png';
 
 const AnimatedNumber = ({ target, duration = 2000 }) => {
   const [current, setCurrent] = useState(0);
@@ -40,9 +41,7 @@ const LandingPage = () => {
       {/* Header */}
       <header style={{ padding: '1.25rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.05)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(255,255,255,0.8)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ background: 'var(--gradient-primary)', padding: '0.5rem', borderRadius: '10px', boxShadow: '0 0 20px rgba(14,165,233,0.4)' }}>
-            <Stethoscope size={22} color="white" />
-          </div>
+          <img src={clinicLogo} alt="Doctors Poly Clinic Logo" style={{ width: '42px', height: '42px', objectFit: 'contain' }} />
           <div>
             <span style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.03em' }}>Doctors Poly Clinic</span>
           </div>
@@ -158,7 +157,7 @@ const LandingPage = () => {
             <Link to="/clinical/dashboard" style={{ textDecoration: 'none' }}>
               <div className="glass-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', borderRadius: '20px' }}>
                 <div style={{ width: '72px', height: '72px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05))', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Stethoscope size={32} color="var(--color-success)" />
+                  <img src={clinicLogo} alt="Doctors Poly Clinic Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                 </div>
                 <div>
                   <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Clinical Dashboard</h3>
